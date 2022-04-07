@@ -20,7 +20,7 @@ CREATE TABLE transacoes(
 	id serial primary key,
 	descricao text not null,
     valor int not null,
-	data date not null,
+	data TIMESTAMP not null,
 	categoria_id int not null,
 	usuario_id int not null,
 	tipo varchar(7) not null,
