@@ -1,13 +1,13 @@
 const express = require('express');
-const { signIn, signUp, profile } = require('./controllers/user');
+const user = require('./controllers/user');
 const validacao = require("./middlewares/validacao")
 const router = express()
 router.use( express.json() )
 
 
-router.get("/usuario", profile);
-router.post("/usuario", validacao.userEmailSenha,signUp);
-
-router.post("/login", validacao.userEmailSenha, signIn);
+router.get("/usuario", user.profile);
+router.post("/usuario", validacao.userEmailSenha,user.signUp);
+router.put("/usuario", user.update);
+router.post("/login", validacao.userEmailSenha, user.signIn);
         
 module.exports = router;
