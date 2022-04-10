@@ -7,15 +7,13 @@ const list = async (req, res) => {
    
     try {
         const { id } = jwt.verify(token, SECRET);
-        
-        const { rows } = await conn.query("Select * from transacoes")
-
+        const { rows } = await conn.query("Select * from transacoes where $1 = usuario_id",[id])
+         
         res.status(200).json(rows);
     }
     catch (error) {
         return res.status(400).json({ message: error.message });
     }
-
 }
 
 module.exports = {
