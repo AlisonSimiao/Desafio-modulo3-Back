@@ -19,5 +19,5 @@ router.get("/categoria", category.list);
 
 //Route transicion
 router.get("/transacao", deal.list);
-
+router.get("/transacao/:id",deal.byId);
 module.exports = router;
