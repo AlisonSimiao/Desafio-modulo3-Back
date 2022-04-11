@@ -21,5 +21,5 @@ router.get("/categoria", category.list);
 router.get("/transacao", deal.list);
 router.get("/transacao/:id",deal.byId);
 router.post("/transacao",deal.signUP);
-
+router.put("/transacao/:id",deal.update)
 module.exports = router;
