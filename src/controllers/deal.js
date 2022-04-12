@@ -1,6 +1,7 @@
 const conn = require("../connection");
 const jwt = require("jsonwebtoken");
 const SECRET = require("../secret");
+const { rows } = require("pg/lib/defaults");
 
 const list = async (req, res) => {
     const token = req.headers.authorization.replace("Bearer ", "");
@@ -27,24 +28,17 @@ const signUP = async (req, res) => {
     try {
         const { id } = jwt.verify(token, SECRET);
         
-        const { rowCount
-        } = await conn.query("insert into transacoes(descricao,valor,data,categoria_id,tipo,usuario_id) values($1,$2,$3,$4,$5,$6)",[descricao,valor,data,categoria_id,tipo,id])
+        const resInsert = await conn.query("insert into transacoes(descricao,valor,data,categoria_id,tipo,usuario_id) values($1,$2,$3,$4,$5,$6)",[descricao,valor,data,categoria_id,tipo,id])
         
-        if(rowCount === 0)
+        if(resInsert.rowCount === 0)
             return res.status(400).json( {message: "Erro> transação nao adicionada"} );
-
-        const queryTake = `select transacoes.id,
-                                transacoes.tipo,
-                                transacoes.descricao,
-                                transacoes.valor,
-                                transacoes.data,
-                                transacoes.usuario_id,
-                                transacoes.categoria_id, 
+        console.log( resInsert );
+        const queryTake = `select transacoes.*, 
                                 categorias.descricao as categoria_nome 
                                 from transacoes,categorias 
-                                where transacoes.categoria_id = categorias.id`
+                                where transacoes.categoria_id = categorias.id and $1 = usuario_id and transacoes.data = $2`
 
-        const { rows: dealResponse } = await conn.query(queryTake);
+        const { rows: dealResponse } = await conn.query(queryTake,[id,data]);
         
         res.status(200).json(dealResponse);
     }
@@ -118,10 +112,40 @@ const del = async (req, res) =>{
     }
 }
 
+const extract = async (req, res) =>{
+    const token = req.headers.authorization.replace("Bearer ", "");
+
+    try {
+        const { id } = jwt.verify(token, SECRET);
+        const {rows: deals, rowCount } = await conn.query(`select valor,tipo from transacoes where $1 = usuario_id`, 
+                                                    [id]);
+
+        if (rowCount == 0)
+            return res.status(400).json({ message: "transaçao nao encontrado" });
+
+        const extractDeals = deals.reduce( (extract, currentDeal)=>{
+                if( currentDeal.tipo == "entrada" )
+                    extract.entrada += currentDeal.valor;
+                else
+                    extract.saida += currentDeal.valor;
+
+                return extract;
+        }, {entrada: 0, saida: 0} );
+
+        console.log( extractDeals )
+
+        res.status(201).json(extractDeals);
+    }
+    catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+}
+
 module.exports = {
     list,
     byId,
     signUP,
     update,
-    del
+    del,
+    extract
 }
