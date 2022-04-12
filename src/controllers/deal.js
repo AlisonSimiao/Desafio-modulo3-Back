@@ -99,9 +99,29 @@ const update = async (req, res) =>{
     }
 }
 
+const del = async (req, res) =>{
+    const token = req.headers.authorization.replace("Bearer ", "");
+    const { id: dealID } = req.params;
+
+    try {
+        const { id } = jwt.verify(token, SECRET);
+        const { rowCount } = await conn.query(`delete from transacoes where $1 = id and $2 = usuario_id`, 
+                                                    [dealID,id]);
+
+        if (rowCount == 0)
+            return res.status(400).json({ message: "transaçao nao encontrado" });
+
+        res.status(204).json();
+    }
+    catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+}
+
 module.exports = {
     list,
     byId,
     signUP,
-    update
+    update,
+    del
 }
