@@ -20,6 +20,8 @@ router.get("/categoria", category.list);
 //Route transicion
 router.get("/transacao", deal.list);
 router.get("/transacao/:id",deal.byId);
-router.post("/transacao",deal.signUP);
-router.put("/transacao/:id",deal.update)
+router.post("/transacao",validacao.dealEnter,deal.signUP);
+router.put("/transacao/:id",validacao.dealEnter,deal.update);
+router.delete("/transacao/:id",deal.del);
+
 module.exports = router;
