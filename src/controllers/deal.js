@@ -8,13 +8,28 @@ const list = async (req, res) => {
    
     try {
         const { id } = jwt.verify(token, SECRET);
-        const { rows } = await conn.query("Select * from transacoes where $1 = usuario_id",[id])
-         
-        res.status(200).json(rows);
+        const { rows } = await conn.query(`select transacoes.*, 
+            categorias.descricao as categoria_nome 
+            from transacoes,categorias 
+            where transacoes.categoria_id = categorias.id and $1 = usuario_id`
+,[id])
+        
+        const data = req.query.filtro ? filter(rows, req.query.filtro) : rows;
+
+        console.log( data );
+        res.status(200).json(data);
     }
     catch (error) {
         return res.status(400).json({ message: error.message });
     }
+}
+
+const filter = (deals, filtros) => {
+    const dataFilter = deals.filter((deal)=>{
+        return  filtros.includes( deal.categoria_nome );
+    })
+
+    return dataFilter;
 }
 
 const signUP = async (req, res) => {
